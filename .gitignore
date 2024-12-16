@@ -35,4 +35,11 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+# prettier
+.prettier*
+
+# nativeWind
+nativewind-env.d.ts
+
+
 app-example
