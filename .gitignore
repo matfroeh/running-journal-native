@@ -38,8 +38,5 @@ yarn-error.*
 # prettier
 .prettier*
 
-# nativeWind
-nativewind-env.d.ts
-
 
 app-example

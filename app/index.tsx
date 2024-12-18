@@ -7,20 +7,22 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { SQLiteProvider, useSQLiteContext } from "expo-sqlite";
+import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 import {
-    SQLiteProvider,
-    useSQLiteContext,
-    type SQLiteDatabase,
-} from "expo-sqlite";
-
-/**
- * The Item type represents a single item in database.
- */
-interface ItemEntity {
-    id: number;
-    done: boolean;
-    value: string;
-}
+    migrateDbIfNeeded,
+    deleteItemAsync,
+    updateItemAsDoneAsync,
+    addItemAsyncNew,
+    getItemsAsync,
+    getUsers,
+    createUser,
+    deleteUser,
+    updateUser,
+    getUserById,
+} from "@/db/db";
+import { ItemEntity, User } from "@/db/modelTypes";
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 //#region Components
 
@@ -37,22 +39,21 @@ function Main() {
     const [text, setText] = useState("");
     const [todoItems, setTodoItems] = useState<ItemEntity[]>([]);
     const [doneItems, setDoneItems] = useState<ItemEntity[]>([]);
+    const [user, setUser] = useState<User>();
+    const [userName, setUserName] = useState("");
+
+    useDrizzleStudio(db);
 
     const refetchItems = useCallback(() => {
         async function refetch() {
             await db.withExclusiveTransactionAsync(async () => {
-                setTodoItems(
-                    await db.getAllAsync<ItemEntity>(
-                        "SELECT * FROM items WHERE done = ?",
-                        false
-                    )
-                );
-                setDoneItems(
-                    await db.getAllAsync<ItemEntity>(
-                        "SELECT * FROM items WHERE done = ?",
-                        true
-                    )
-                );
+                setTodoItems(await getItemsAsync(db, false));
+                setDoneItems(await getItemsAsync(db, true));
+                getUsers(db).then((users) => {
+                    console.log("users", users);
+
+                    setUser(users[0]);
+                });
             });
         }
         refetch();
@@ -62,6 +63,8 @@ function Main() {
         refetchItems();
     }, []);
 
+    console.log("user[0} at Main", user);
+
     return (
         <View style={styles.container}>
             <Text style={styles.heading}>SQLite Example</Text>
@@ -70,7 +73,8 @@ function Main() {
                 <TextInput
                     onChangeText={(text) => setText(text)}
                     onSubmitEditing={async () => {
-                        await addItemAsync(db, text);
+                        // await addItemAsync(db, text);
+                        await addItemAsyncNew(db, { done: false, value: text });
                         await refetchItems();
                         setText("");
                     }}
@@ -107,6 +111,70 @@ function Main() {
                         />
                     ))}
                 </View>
+                <View
+                    className="flex-1 flex-row"
+                    style={styles.sectionContainer}
+                >
+                    <TouchableOpacity
+                        className="flex-1 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2"
+                        onPress={async () => {
+                            const res = await createUser(db, "fsm");
+                            if (res.changes === 1) {
+                                console.log("User created");
+                            }
+                        }}
+                    >
+                        <Text>Create User</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        className="flex-1 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2"
+                        onPress={async () => {
+                            const users = await getUsers(db);
+                            setUser(users[0]);
+                            // console.log(users);
+                        }}
+                    >
+                        <Text>Get Users</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        className="flex-1 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2"
+                        onPress={async () => {
+                            const res = await deleteUser(db, 1);
+                            if (res.changes === 1) {
+                                console.log("User deleted");
+                            }
+                        }}
+                    >
+                        <Text>Delete User id:1</Text>
+                    </TouchableOpacity>
+                </View>
+                <View className="flex-1">
+                    <TextInput
+                        onChangeText={(text) => setUserName(text)}
+                        onSubmitEditing={async () => {
+                            if (user) {
+                                const res = await updateUser(db, {
+                                    ...user,
+                                    name: userName,
+                                });
+                                if (res.changes === 1) {
+                                    console.log("User updated");
+                                    const updatedUser = await getUserById(
+                                        db,
+                                        user.id
+                                    );
+                                    updatedUser && setUser(updatedUser);
+                                }
+                            } else {
+                                console.error("User is undefined");
+                            }
+                            setUserName("");
+                        }}
+                        placeholder="change user name"
+                        style={styles.input}
+                        value={userName}
+                    />
+                </View>
             </ScrollView>
         </View>
     );
@@ -122,7 +190,7 @@ function Item({
     const { id, done, value } = item;
     return (
         <TouchableOpacity
-            onPress={() => onPressItem && onPressItem(id)}
+            onPress={() => onPressItem(id)}
             style={[styles.item, done && styles.itemDone]}
         >
             <Text style={[styles.itemText, done && styles.itemTextDone]}>
@@ -131,57 +199,6 @@ function Item({
         </TouchableOpacity>
     );
 }
-
-//#endregion
-
-//#region DB Operations
-
-async function addItemAsync(db: SQLiteDatabase, text: string): Promise<void> {
-    if (text !== "") {
-        await db.runAsync(
-            "INSERT INTO items (done, value) VALUES (?, ?);",
-            false,
-            text
-        );
-    }
-}
-
-async function updateItemAsDoneAsync(
-    db: SQLiteDatabase,
-    id: number
-): Promise<void> {
-    await db.runAsync("UPDATE items SET done = ? WHERE id = ?;", true, id);
-}
-
-async function deleteItemAsync(db: SQLiteDatabase, id: number): Promise<void> {
-    await db.runAsync("DELETE FROM items WHERE id = ?;", id);
-}
-
-async function migrateDbIfNeeded(db: SQLiteDatabase) {
-    const DATABASE_VERSION = 1;
-    let result = await db.getFirstAsync<{ user_version: number }>(
-        "PRAGMA user_version"
-    );
-    let currentDbVersion = result ? result.user_version : 0;
-    if (currentDbVersion >= DATABASE_VERSION) {
-        return;
-    }
-    if (currentDbVersion === 0) {
-        await db.execAsync(`
-PRAGMA journal_mode = 'wal';
-CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY NOT NULL, done INT, value TEXT);
-`);
-        currentDbVersion = 1;
-    }
-    // if (currentDbVersion === 1) {
-    //   Add more migrations
-    // }
-    await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
-}
-
-//#endregion
-
-//#region Styles
 
 const styles = StyleSheet.create({
     container: {
