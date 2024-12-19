@@ -1,7 +1,7 @@
 export interface ItemEntity {
     id?: number;
-    done: boolean;
-    value: string;
+    done: boolean | null;
+    value: string | null;
 }
 
 export interface User {

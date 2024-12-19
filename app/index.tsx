@@ -7,8 +7,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import { SQLiteProvider, useSQLiteContext } from "expo-sqlite";
-import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
+// import { SQLiteProvider, useSQLiteContext } from "expo-sqlite";
 import {
     migrateDbIfNeeded,
     deleteItemAsync,
@@ -22,48 +21,94 @@ import {
     getUserById,
 } from "@/db/db";
 import { ItemEntity, User } from "@/db/modelTypes";
-import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
+import DatabaseContextProvider from "@/context/DatabaseContextProvider";
+import { useDatabase } from "@/context/DatabaseContext";
+
+import { itemsTable } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 //#region Components
 
 export default function App() {
     return (
-        <SQLiteProvider databaseName="db.db" onInit={migrateDbIfNeeded}>
+        <DatabaseContextProvider>
             <Main />
-        </SQLiteProvider>
+        </DatabaseContextProvider>
     );
 }
 
 function Main() {
-    const db = useSQLiteContext();
+    const db = useDatabase();
+
+    // console.log("db", db);
+
     const [text, setText] = useState("");
-    const [todoItems, setTodoItems] = useState<ItemEntity[]>([]);
-    const [doneItems, setDoneItems] = useState<ItemEntity[]>([]);
-    const [user, setUser] = useState<User>();
-    const [userName, setUserName] = useState("");
+    const [todoItems, setTodoItems] = useState<
+        (typeof itemsTable.$inferSelect)[] | null
+    >(null);
+    const [doneItems, setDoneItems] = useState<
+        (typeof itemsTable.$inferSelect)[] | null
+    >(null);
+    // const [user, setUser] = useState<User>();
+    // const [userName, setUserName] = useState("");
 
-    useDrizzleStudio(db);
-
-    const refetchItems = useCallback(() => {
-        async function refetch() {
-            await db.withExclusiveTransactionAsync(async () => {
-                setTodoItems(await getItemsAsync(db, false));
-                setDoneItems(await getItemsAsync(db, true));
-                getUsers(db).then((users) => {
-                    console.log("users", users);
-
-                    setUser(users[0]);
-                });
-            });
-        }
-        refetch();
-    }, [db]);
+    console.log("todoItems", todoItems);
 
     useEffect(() => {
-        refetchItems();
+        (async () => {
+            // await db.delete(itemsTable);
+            // await db.insert(itemsTable).values([
+            //     {
+            //         done: false,
+            //         value: "Learn React Native",
+            //     },
+            //     {
+            //         done: false,
+            //         value: "Learn Expo",
+            //     },
+            //     {
+            //         done: true,
+            //         value: "Learn SQLite",
+            //     },
+            // ]);
+            const itemsDone = await db
+                .select()
+                .from(itemsTable)
+                .where(eq(itemsTable.done, true));
+
+            const itemsTodo = await db
+                .select()
+                .from(itemsTable)
+                .where(eq(itemsTable.done, false));
+
+            console.log("itemsDone", itemsDone);
+            console.log("itemsTodo", itemsTodo);
+
+            setDoneItems(itemsDone);
+            setTodoItems(itemsTodo);
+        })();
     }, []);
 
-    console.log("user[0} at Main", user);
+    // const refetchItems = useCallback(() => {
+    //     async function refetch() {
+    //         await db.withExclusiveTransactionAsync(async () => {
+    //             setTodoItems(await getItemsAsync(db, false));
+    //             setDoneItems(await getItemsAsync(db, true));
+    //             getUsers(db).then((users) => {
+    //                 console.log("users", users);
+
+    //                 setUser(users[0]);
+    //             });
+    //         });
+    //     }
+    //     refetch();
+    // }, [db]);
+
+    // useEffect(() => {
+    //     refetchItems();
+    // }, []);
+
+    // console.log("user[0} at Main", user);
 
     return (
         <View style={styles.container}>
@@ -72,12 +117,12 @@ function Main() {
             <View style={styles.flexRow}>
                 <TextInput
                     onChangeText={(text) => setText(text)}
-                    onSubmitEditing={async () => {
-                        // await addItemAsync(db, text);
-                        await addItemAsyncNew(db, { done: false, value: text });
-                        await refetchItems();
-                        setText("");
-                    }}
+                    // onSubmitEditing={async () => {
+                    //     // await addItemAsync(db, text);
+                    //     await addItemAsyncNew(db, { done: false, value: text });
+                    //     await refetchItems();
+                    //     setText("");
+                    // }}
                     placeholder="what do you need to do?"
                     style={styles.input}
                     value={text}
@@ -87,31 +132,33 @@ function Main() {
             <ScrollView style={styles.listArea}>
                 <View style={styles.sectionContainer}>
                     <Text style={styles.sectionHeading}>Todo</Text>
-                    {todoItems.map((item) => (
-                        <Item
-                            key={item.id}
-                            item={item}
-                            onPressItem={async (id) => {
-                                await updateItemAsDoneAsync(db, id);
-                                await refetchItems();
-                            }}
-                        />
-                    ))}
+                    {todoItems &&
+                        todoItems.map((item) => (
+                            <Item
+                                key={item.id}
+                                item={item}
+                                onPressItem={async (id) => {
+                                    // await updateItemAsDoneAsync(db, id);
+                                    // await refetchItems();
+                                }}
+                            />
+                        ))}
                 </View>
                 <View style={styles.sectionContainer}>
                     <Text style={styles.sectionHeading}>Completed</Text>
-                    {doneItems.map((item) => (
-                        <Item
-                            key={item.id}
-                            item={item}
-                            onPressItem={async (id) => {
-                                await deleteItemAsync(db, id);
-                                await refetchItems();
-                            }}
-                        />
-                    ))}
+                    {doneItems &&
+                        doneItems.map((item) => (
+                            <Item
+                                key={item.id}
+                                item={item}
+                                onPressItem={async (id) => {
+                                    // await deleteItemAsync(db, id);
+                                    // await refetchItems();
+                                }}
+                            />
+                        ))}
                 </View>
-                <View
+                {/* <View
                     className="flex-1 flex-row"
                     style={styles.sectionContainer}
                 >
@@ -174,7 +221,7 @@ function Main() {
                         style={styles.input}
                         value={userName}
                     />
-                </View>
+                </View> */}
             </ScrollView>
         </View>
     );
