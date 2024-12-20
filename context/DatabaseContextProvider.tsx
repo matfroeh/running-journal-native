@@ -32,9 +32,10 @@ const DatabaseContextProvider = ({ children }: { children: ReactNode }) => {
             return;
         }
         // access error on closing?
-        // return () => {
-        //     expo?.closeSync();
-        // };
+        return () => {
+            expo?.closeSync();
+            expo && console.log("db closed");
+        };
     }, [success, error]);
 
     // migrations, etc.
