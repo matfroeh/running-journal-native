@@ -1,21 +1,16 @@
 import { useState } from "react";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { ItemEntity, User } from "@/types/modelTypes";
-import DatabaseContextProvider from "@/context/DatabaseContextProvider";
 import { useDatabase } from "@/context/DatabaseContext";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { itemsTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { useTheme } from "react-native-paper";
-import { Surface, Text, TextInput } from "react-native-paper";
+import { Text, TextInput } from "react-native-paper";
 //#region Components
 
 export default function App() {
-    return (
-        <DatabaseContextProvider>
-            <Main />
-        </DatabaseContextProvider>
-    );
+    return <Main />;
 }
 
 function Main() {
