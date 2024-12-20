@@ -1,10 +1,5 @@
-import { drizzle, ExpoSQLiteDatabase } from "drizzle-orm/expo-sqlite";
-import { SQLiteDatabase } from "expo-sqlite";
 import { createContext, useContext } from "react";
-
-type DatabaseType = ExpoSQLiteDatabase<Record<string, never>> & {
-    $client: SQLiteDatabase;
-};
+import { DatabaseType } from "@/types/dbType";
 
 export const DatabaseContext = createContext<DatabaseType | null>(null);
 
