@@ -1,32 +1,13 @@
-import { useState, useEffect, useCallback } from "react";
-import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-} from "react-native";
-// import { SQLiteProvider, useSQLiteContext } from "expo-sqlite";
-import {
-    migrateDbIfNeeded,
-    deleteItemAsync,
-    updateItemAsDoneAsync,
-    addItemAsyncNew,
-    getItemsAsync,
-    getUsers,
-    createUser,
-    deleteUser,
-    updateUser,
-    getUserById,
-} from "@/db/db";
-import { ItemEntity, User } from "@/db/modelTypes";
+import { useState } from "react";
+import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { ItemEntity, User } from "@/types/modelTypes";
 import DatabaseContextProvider from "@/context/DatabaseContextProvider";
 import { useDatabase } from "@/context/DatabaseContext";
-
+import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { itemsTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
-
+import { useTheme } from "react-native-paper";
+import { Surface, Text, TextInput } from "react-native-paper";
 //#region Components
 
 export default function App() {
@@ -40,95 +21,41 @@ export default function App() {
 function Main() {
     const db = useDatabase();
 
-    // console.log("db", db);
+    const { data } = useLiveQuery(db.select().from(itemsTable));
+
+    const todoItems = data.filter((item) => !item.done);
+    const doneItems = data.filter((item) => item.done);
 
     const [text, setText] = useState("");
-    const [todoItems, setTodoItems] = useState<
-        (typeof itemsTable.$inferSelect)[] | null
-    >(null);
-    const [doneItems, setDoneItems] = useState<
-        (typeof itemsTable.$inferSelect)[] | null
-    >(null);
-    // const [user, setUser] = useState<User>();
-    // const [userName, setUserName] = useState("");
-
-    console.log("todoItems", todoItems);
-
-    useEffect(() => {
-        (async () => {
-            // await db.delete(itemsTable);
-            // await db.insert(itemsTable).values([
-            //     {
-            //         done: false,
-            //         value: "Learn React Native",
-            //     },
-            //     {
-            //         done: false,
-            //         value: "Learn Expo",
-            //     },
-            //     {
-            //         done: true,
-            //         value: "Learn SQLite",
-            //     },
-            // ]);
-            const itemsDone = await db
-                .select()
-                .from(itemsTable)
-                .where(eq(itemsTable.done, true));
-
-            const itemsTodo = await db
-                .select()
-                .from(itemsTable)
-                .where(eq(itemsTable.done, false));
-
-            console.log("itemsDone", itemsDone);
-            console.log("itemsTodo", itemsTodo);
-
-            setDoneItems(itemsDone);
-            setTodoItems(itemsTodo);
-        })();
-    }, []);
-
-    // const refetchItems = useCallback(() => {
-    //     async function refetch() {
-    //         await db.withExclusiveTransactionAsync(async () => {
-    //             setTodoItems(await getItemsAsync(db, false));
-    //             setDoneItems(await getItemsAsync(db, true));
-    //             getUsers(db).then((users) => {
-    //                 console.log("users", users);
-
-    //                 setUser(users[0]);
-    //             });
-    //         });
-    //     }
-    //     refetch();
-    // }, [db]);
-
-    // useEffect(() => {
-    //     refetchItems();
-    // }, []);
-
-    // console.log("user[0} at Main", user);
+    const theme = useTheme();
 
     return (
-        <View style={styles.container}>
+        // <View style={styles.container}>
+        <View
+            className="mt-0"
+            style={[
+                { backgroundColor: theme.colors.background },
+                styles.container,
+            ]}
+        >
             <Text style={styles.heading}>SQLite Example</Text>
 
             <View style={styles.flexRow}>
                 <TextInput
+                    mode="outlined"
                     onChangeText={(text) => setText(text)}
-                    // onSubmitEditing={async () => {
-                    //     // await addItemAsync(db, text);
-                    //     await addItemAsyncNew(db, { done: false, value: text });
-                    //     await refetchItems();
-                    //     setText("");
-                    // }}
+                    onSubmitEditing={async () => {
+                        await db.insert(itemsTable).values({
+                            done: false,
+                            value: text,
+                        });
+                        setText("");
+                    }}
                     placeholder="what do you need to do?"
                     style={styles.input}
                     value={text}
                 />
             </View>
-
             <ScrollView style={styles.listArea}>
                 <View style={styles.sectionContainer}>
                     <Text style={styles.sectionHeading}>Todo</Text>
@@ -138,8 +65,10 @@ function Main() {
                                 key={item.id}
                                 item={item}
                                 onPressItem={async (id) => {
-                                    // await updateItemAsDoneAsync(db, id);
-                                    // await refetchItems();
+                                    await db
+                                        .update(itemsTable)
+                                        .set({ done: true })
+                                        .where(eq(itemsTable.id, id));
                                 }}
                             />
                         ))}
@@ -152,8 +81,9 @@ function Main() {
                                 key={item.id}
                                 item={item}
                                 onPressItem={async (id) => {
-                                    // await deleteItemAsync(db, id);
-                                    // await refetchItems();
+                                    await db
+                                        .delete(itemsTable)
+                                        .where(eq(itemsTable.id, id));
                                 }}
                             />
                         ))}
@@ -249,7 +179,6 @@ function Item({
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: "#fff",
         flex: 1,
         paddingTop: 64,
     },
@@ -262,7 +191,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
     },
     input: {
-        borderColor: "#4630eb",
+        // borderColor: "#4630eb",
         borderRadius: 4,
         borderWidth: 1,
         flex: 1,
@@ -271,7 +200,6 @@ const styles = StyleSheet.create({
         padding: 8,
     },
     listArea: {
-        backgroundColor: "#f0f0f0",
         flex: 1,
         paddingTop: 16,
     },
@@ -284,8 +212,8 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     item: {
-        backgroundColor: "#fff",
-        borderColor: "#000",
+        // backgroundColor: "#fff",
+        // borderColor: "#000",
         borderWidth: 1,
         padding: 8,
     },
@@ -293,10 +221,10 @@ const styles = StyleSheet.create({
         backgroundColor: "#1c9963",
     },
     itemText: {
-        color: "#000",
+        // color: "#000",
     },
     itemTextDone: {
-        color: "#fff",
+        // color: "#fff",
     },
 });
 
