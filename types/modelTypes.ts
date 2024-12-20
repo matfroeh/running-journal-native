@@ -30,7 +30,6 @@ export interface Run {
     pace?: number; // in seconds per kilometer
     heartRate?: number; // in bpm
     effort?: number; // 1-10
-    equipmentIds?: number[]; // array of equipment ids
 }
 
 export interface ScheduledWorkout {
@@ -55,10 +54,11 @@ export interface Equipment {
     inUseSince?: string;
     distance?: number; // in meters
     duration?: number; // in seconds
-    status: Status; // active or retired
+    status: "active" | "retired";
 }
 
-enum Status {
-    Active = "active",
-    Retired = "retired",
+export interface RunEquipmentMapping {
+    id: number;
+    runId: number;
+    equipmentId: number;
 }

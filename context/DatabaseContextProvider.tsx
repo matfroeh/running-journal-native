@@ -6,7 +6,7 @@ import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import migrations from "@/drizzle/migrations";
 
-const expo = SQLite.openDatabaseSync("db_test4.db", {
+const expo = SQLite.openDatabaseSync("db_test5.db", {
     enableChangeListener: true,
 });
 
