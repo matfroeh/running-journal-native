@@ -35,8 +35,11 @@ const DatabaseContextProvider = ({ children }: { children: ReactNode }) => {
             return;
         }
         // ToDo: if no user is found, redirect to a register page to create a profile
+        // ToDo: maybe create a app context provider for user data
         (async () => {
             const users = await getUserById(db, 1);
+            console.log("users", users);
+
             if (users && users.length > 0) {
                 setUser(users[0]);
             } else {

@@ -1,58 +1,54 @@
 import { useDatabase } from "@/context/DatabaseContext";
-import {
-    Journal,
-    User,
-    Run,
-    ScheduledWorkout,
-    Equipment,
-    RunEquipmentMapping,
-} from "@/types/modelTypes";
-import {
-    journalsTable,
-    usersTable,
-    runsTable,
-    scheduledWorkoutsTable,
-    equipmentTable,
-    runsEquipmentTable,
-} from "@/db/schema";
+import { Journal } from "@/types/modelTypes";
 import { Button, Text, useTheme } from "react-native-paper";
-import { View } from "react-native";
-import { useLiveQuery } from "drizzle-orm/expo-sqlite";
-import { eq } from "drizzle-orm";
+import { getLatestJournal } from "@/db/controller";
+import { useEffect, useState } from "react";
+import { ViewThemed } from "@/components/generic";
 
 const Calendar = () => {
     const { db, user } = useDatabase();
     const theme = useTheme();
+    console.log("user", user);
+    console.log("db", db);
+
+    const [journal, setJournal] = useState<Journal | null>(null);
 
     if (!db) {
-        return <Text>Database not found</Text>;
+        return (
+            <ViewThemed>
+                <Text>Database not found</Text>
+            </ViewThemed>
+        );
     }
 
     if (!user) {
-        return <Text>User not found</Text>;
+        return (
+            <ViewThemed>
+                <Text>User not found</Text>
+            </ViewThemed>
+        );
     }
 
     // ToDo: get journal by date of maybe we integrate a setCurrent setting saved in local storage
     // and fetch the latest journal entry by default as long setCurrent is not set
-    const { data: journals } = useLiveQuery(
-        db.select().from(journalsTable).where(eq(journalsTable.userId, user.id))
-    );
+    useEffect(() => {
+        (async () => {
+            console.log("async");
 
-    const firstJournalEntry: Journal = journals[0];
-
-    console.log("data", journals);
+            const firstJournalEntry = await getLatestJournal(db, user.id);
+            console.log("firstJournalEntry", firstJournalEntry);
+            setJournal(firstJournalEntry);
+        })();
+    }, [db, user]);
 
     return (
-        <View
+        <ViewThemed
             style={{
-                flex: 1,
-                justifyContent: "flex-start",
                 alignItems: "center",
-                backgroundColor: theme.colors.background,
             }}
         >
-            <Text>{firstJournalEntry.title}</Text>
-        </View>
+            <Text>{journal?.title}</Text>
+        </ViewThemed>
     );
 };
 
