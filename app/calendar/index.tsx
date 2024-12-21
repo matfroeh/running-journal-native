@@ -1,35 +1,54 @@
-import { View, Text, Pressable } from "react-native";
 import { useDatabase } from "@/context/DatabaseContext";
-import {
-    journals as journalTestData,
-    users as userTestData,
-} from "@/assets/testData";
-import { Journal, User } from "@/types/modelTypes";
-import { journalsTable, usersTable } from "@/db/schema";
+import { Journal } from "@/types/modelTypes";
+import { Button, Text, useTheme } from "react-native-paper";
+import { getLatestJournal } from "@/db/controller";
+import { useEffect, useState } from "react";
+import { ViewThemed } from "@/components/generic";
 
 const Calendar = () => {
-    const db = useDatabase();
+    const { db, user } = useDatabase();
+    const theme = useTheme();
+    console.log("user", user);
     console.log("db", db);
 
-    const insertTestData = async () => {
-        console.log("inserting test data");
+    const [journal, setJournal] = useState<Journal | null>(null);
 
-        // successfully inserted test data of users and journals
-        // await db.insert(usersTable).values(userTestData).onConflictDoNothing();
-        // await db
-        //     .insert(journalsTable)
-        //     .values(journalTestData)
-        //     .onConflictDoNothing();
-        console.log("test data inserted");
-    };
+    if (!db) {
+        return (
+            <ViewThemed>
+                <Text>Database not found</Text>
+            </ViewThemed>
+        );
+    }
+
+    if (!user) {
+        return (
+            <ViewThemed>
+                <Text>User not found</Text>
+            </ViewThemed>
+        );
+    }
+
+    // ToDo: get journal by date of maybe we integrate a setCurrent setting saved in local storage
+    // and fetch the latest journal entry by default as long setCurrent is not set
+    useEffect(() => {
+        (async () => {
+            console.log("async");
+
+            const firstJournalEntry = await getLatestJournal(db, user.id);
+            console.log("firstJournalEntry", firstJournalEntry);
+            setJournal(firstJournalEntry);
+        })();
+    }, [db, user]);
 
     return (
-        <View>
-            <Text>Calendar</Text>
-            <Pressable onPress={() => insertTestData()}>
-                <Text>Press me</Text>
-            </Pressable>
-        </View>
+        <ViewThemed
+            style={{
+                alignItems: "center",
+            }}
+        >
+            <Text>{journal?.title}</Text>
+        </ViewThemed>
     );
 };
 

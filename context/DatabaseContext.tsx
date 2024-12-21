@@ -1,7 +1,16 @@
 import { createContext, useContext } from "react";
 import { DatabaseType } from "@/types/dbType";
+import { User } from "@/types/modelTypes";
 
-export const DatabaseContext = createContext<DatabaseType | null>(null);
+interface DatabaseContextTypes {
+    db: DatabaseType | null;
+    user: User | null;
+}
+
+export const DatabaseContext = createContext<DatabaseContextTypes>({
+    db: null,
+    user: null,
+});
 
 export const useDatabase = () => {
     const context = useContext(DatabaseContext);

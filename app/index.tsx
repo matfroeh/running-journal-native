@@ -14,8 +14,11 @@ export default function App() {
 }
 
 function Main() {
-    const db = useDatabase();
+    const { db } = useDatabase();
 
+    if (!db) {
+        return <Text>Database not found</Text>;
+    }
     const { data } = useLiveQuery(db.select().from(itemsTable));
 
     const todoItems = data.filter((item) => !item.done);

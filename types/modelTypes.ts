@@ -13,8 +13,8 @@ export interface Journal {
     id: number;
     userId: number;
     title: string;
-    startDate: string; // sqlite date format: YYYY-MM-DD returned as string
-    endDate: string;
+    startDate: Date;
+    endDate: Date;
 }
 
 export interface Run {
@@ -22,7 +22,7 @@ export interface Run {
     userId: number;
     journalId: number;
     title: string;
-    date: string; // sqlite datetime format: YYYY-MM-DD HH:MM:SS returned as string
+    date: Date;
     type?: string;
     notes?: string;
     distance?: number; // in meters
@@ -35,9 +35,9 @@ export interface Run {
 export interface ScheduledWorkout {
     id: number;
     userId: number;
-    journal_id: number;
+    journalId: number;
     title: string;
-    date: string;
+    date: Date;
     type?: string;
     description?: string;
     distance?: number; // in meters
@@ -51,7 +51,7 @@ export interface Equipment {
     brand?: string;
     model?: string;
     type?: string;
-    inUseSince?: string;
+    inUseSince?: Date;
     distance?: number; // in meters
     duration?: number; // in seconds
     status: "active" | "retired";
