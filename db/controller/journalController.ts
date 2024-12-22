@@ -1,6 +1,6 @@
 import { journalsTable } from "@/db/schema";
 import { DatabaseType } from "@/types/dbType";
-import { Journal } from "@/types/modelTypes";
+import { Journal, NewJournal } from "@/types/modelTypes";
 import { eq, and, desc } from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 
@@ -47,10 +47,10 @@ export const getLatestJournal = async (db: DatabaseType, userId: number) => {
     return journal;
 };
 
-// This will be fetched using LiveQuery as this request will be used in the Calendar component
+// Using LiveQuery as this request will be used in the Calendar component and we want to avoid using useState
 export const getJournalById = async (
     db: DatabaseType,
-    userId: number,
+    userId: number, // UserId is superfluous as the journalId is unique, but we want to make sure that the journal belongs to the user
     journalId: number
 ) => {
     const { data: journal, error } = useLiveQuery(
@@ -69,15 +69,10 @@ export const getJournalById = async (
     return journal;
 };
 
-// We want to always explicitly pass the userId to the create function to avoid any mistakes upon creation and to ease handling during creation
-export const createJournal = async (
-    db: DatabaseType,
-    journal: Omit<Journal, "userId">,
-    userId: number
-) => {
+export const createJournal = async (db: DatabaseType, journal: NewJournal) => {
     const addedJournalId: { insertedId: number }[] = await db
         .insert(journalsTable)
-        .values({ ...journal, userId })
+        .values(journal)
         .returning({ insertedId: journalsTable.id });
 
     if (!addedJournalId) throw new Error("Journal could not be created");

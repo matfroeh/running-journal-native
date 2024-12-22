@@ -4,6 +4,8 @@ export interface ItemEntity {
     value: string | null;
 }
 
+//#region Entities
+
 export interface User {
     id: number;
     name: string;
@@ -62,3 +64,13 @@ export interface RunEquipmentMapping {
     runId: number;
     equipmentId: number;
 }
+
+//#endregion
+
+//#region New Entities
+export type NewUser = Omit<User, "id">;
+export type NewJournal = Omit<Journal, "id">;
+export type NewRun = Omit<Run, "id">;
+export type NewScheduledWorkout = Omit<ScheduledWorkout, "id">;
+export type NewEquipment = Omit<Equipment, "id">;
+export type NewRunEquipmentMapping = Omit<RunEquipmentMapping, "id">;

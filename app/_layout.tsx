@@ -13,10 +13,7 @@ export default function Layout() {
         <PaperProvider
             theme={{
                 ...defaultTheme,
-                colors: {
-                    ...defaultTheme.colors,
-                    // primary: "#663399"
-                },
+                colors: { ...defaultTheme.colors },
             }}
         >
             <GestureHandlerRootView style={{ flex: 1 }}>

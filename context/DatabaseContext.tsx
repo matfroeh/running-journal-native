@@ -8,6 +8,7 @@ import { User } from "@/types/modelTypes";
 interface DatabaseContextTypes {
     db: DatabaseType;
     user: User;
+    loading: boolean;
 }
 
 export const DatabaseContext = createContext<DatabaseContextTypes>(
