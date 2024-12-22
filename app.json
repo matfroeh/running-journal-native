@@ -16,6 +16,7 @@
                 "foregroundImage": "assets/images/shoe-colorful-placeholder.png",
                 "backgroundColor": "#ffffff"
             },
+
             "package": "com.anonymous.runningjournalrn"
         },
         "web": {
@@ -38,6 +39,14 @@
         ],
         "experiments": {
             "typedRoutes": true
+        },
+        "extra": {
+            "router": {
+                "origin": false
+            },
+            "eas": {
+                "projectId": "0c5c7386-2bcf-42ba-af9f-f9c49e69eb7d"
+            }
         }
     }
 }

@@ -6,13 +6,17 @@ import {
 } from "react-native-paper";
 import { DrawerNavigation } from "@/components/navigation/DrawerNavigation";
 import DatabaseContextProvider from "@/context/DatabaseContextProvider";
+import { StatusBar } from "expo-status-bar";
 
 export default function Layout() {
     return (
         <PaperProvider
             theme={{
                 ...defaultTheme,
-                colors: { ...defaultTheme.colors, primary: "#663399" },
+                colors: {
+                    ...defaultTheme.colors,
+                    // primary: "#663399"
+                },
             }}
         >
             <GestureHandlerRootView style={{ flex: 1 }}>
@@ -20,6 +24,7 @@ export default function Layout() {
                     <DrawerNavigation />
                 </DatabaseContextProvider>
             </GestureHandlerRootView>
+            <StatusBar style="auto" />
         </PaperProvider>
     );
 }

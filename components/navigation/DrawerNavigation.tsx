@@ -38,6 +38,16 @@ export const DrawerNavigation = () => {
                     ),
                 }}
             />
+            <Drawer.Screen
+                name="testDataImport/index"
+                options={{
+                    drawerLabel: "Test Data Import",
+                    title: "Test Data Import",
+                    drawerIcon: ({ color, size }) => (
+                        <Icon source="import" color={color} size={size} />
+                    ),
+                }}
+            />
         </Drawer>
     );
 };

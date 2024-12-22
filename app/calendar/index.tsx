@@ -4,6 +4,7 @@ import { Button, Text, useTheme } from "react-native-paper";
 import { getLatestJournal } from "@/db/controller";
 import { useEffect, useState } from "react";
 import { ViewThemed } from "@/components/generic";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Calendar = () => {
     const { db, user } = useDatabase();
@@ -15,17 +16,25 @@ const Calendar = () => {
 
     if (!db) {
         return (
-            <ViewThemed>
-                <Text>Database not found</Text>
-            </ViewThemed>
+            <SafeAreaView
+                style={{ flex: 1, backgroundColor: theme.colors.background }}
+            >
+                <ViewThemed>
+                    <Text>Database not found</Text>
+                </ViewThemed>
+            </SafeAreaView>
         );
     }
 
     if (!user) {
         return (
-            <ViewThemed>
-                <Text>User not found</Text>
-            </ViewThemed>
+            <SafeAreaView
+                style={{ flex: 1, backgroundColor: theme.colors.background }}
+            >
+                <ViewThemed>
+                    <Text>User not found</Text>
+                </ViewThemed>
+            </SafeAreaView>
         );
     }
 
@@ -42,13 +51,17 @@ const Calendar = () => {
     }, [db, user]);
 
     return (
-        <ViewThemed
-            style={{
-                alignItems: "center",
-            }}
+        <SafeAreaView
+            style={{ flex: 1, backgroundColor: theme.colors.background }}
         >
-            <Text>{journal?.title}</Text>
-        </ViewThemed>
+            <ViewThemed
+                style={{
+                    alignItems: "center",
+                }}
+            >
+                <Text>{journal?.title}</Text>
+            </ViewThemed>
+        </SafeAreaView>
     );
 };
 
