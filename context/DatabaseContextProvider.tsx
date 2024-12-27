@@ -1,63 +1,33 @@
 import { DatabaseContext } from "./DatabaseContext";
 import * as SQLite from "expo-sqlite";
-import { ReactNode, useEffect, useState } from "react";
-import { drizzle } from "drizzle-orm/expo-sqlite";
-import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
-import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
-import migrations from "@/drizzle/migrations";
-import { getUserById } from "@/db/controller/userController";
-import { User } from "@/types/modelTypes";
+import { ReactNode } from "react";
+import { DatabaseCreationError } from "@/components/error";
+import { useDbInit } from "@/lib/hooks";
+import { LoadingScreen } from "@/components/generic";
 
-const expo = SQLite.openDatabaseSync("db_test5.db", {
+const databaseName = "db_test7.db";
+const expo = SQLite.openDatabaseSync(databaseName, {
     enableChangeListener: true,
 });
 
-// Open the database connection // compiling errors: maybe drizzle is not compatible with openAsync
-//     const expo = await SQLite.openDatabaseAsync("db_test4.db", {
-//         enableChangeListener: true,
-//     });
-//     return expo;
-// };
-// const expo = await connectDb();
-
 const DatabaseContextProvider = ({ children }: { children: ReactNode }) => {
-    const db = drizzle(expo);
-    const { success, error } = useMigrations(db, migrations);
-    console.log("success", success);
-    const [user, setUser] = useState<User | null>(null);
+    const { db, user, loading, error } = useDbInit(expo);
 
-    // successful migration required to open the db viewer
-    useDrizzleStudio(expo);
+    if (loading) {
+        return <LoadingScreen />;
+    }
 
-    useEffect(() => {
-        if (!success) {
-            console.log("error", error);
-            return;
-        }
-        // ToDo: if no user is found, redirect to a register page to create a profile
-        // ToDo: maybe create a app context provider for user data
-        (async () => {
-            const users = await getUserById(db, 1);
-            console.log("users", users);
-
-            if (users && users.length > 0) {
-                setUser(users[0]);
-            } else {
-                setUser(null);
-            }
-        })();
-
-        // access error on closing?
-        return () => {
-            expo?.closeSync();
-            expo && console.log("db closed");
-        };
-    }, [success, error]);
-
-    // migrations, etc.
+    if (error) {
+        console.error("Database creation error:", error);
+        return <DatabaseCreationError />;
+    }
+    // Explicit error state upon user creation failure
+    if (user.id === -2) {
+        return <DatabaseCreationError />;
+    }
 
     return (
-        <DatabaseContext.Provider value={{ db, user }}>
+        <DatabaseContext.Provider value={{ db, user, loading }}>
             {children}
         </DatabaseContext.Provider>
     );
