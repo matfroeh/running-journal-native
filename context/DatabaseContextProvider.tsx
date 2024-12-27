@@ -3,14 +3,19 @@ import * as SQLite from "expo-sqlite";
 import { ReactNode } from "react";
 import { DatabaseCreationError } from "@/components/error";
 import { useDbInit } from "@/lib/hooks";
+import { LoadingScreen } from "@/components/generic";
 
-const databaseName = "db_test6.db";
+const databaseName = "db_test7.db";
 const expo = SQLite.openDatabaseSync(databaseName, {
     enableChangeListener: true,
 });
 
 const DatabaseContextProvider = ({ children }: { children: ReactNode }) => {
     const { db, user, loading, error } = useDbInit(expo);
+
+    if (loading) {
+        return <LoadingScreen />;
+    }
 
     if (error) {
         console.error("Database creation error:", error);

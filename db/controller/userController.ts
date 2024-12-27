@@ -14,12 +14,12 @@ export const getAllUsers = async (db: DatabaseType): Promise<User[]> => {
     }
 };
 
-export const getLiveUserById = (db: DatabaseType, id: number): User => {
+export const getLiveUserById = (db: DatabaseType, id: number) => {
     const { data: user, error } = useLiveQuery(
-        db.select().from(usersTable).where(eq(usersTable.id, id))
+        db.selectDistinct().from(usersTable).where(eq(usersTable.id, id))
     );
     if (error) throw new Error(error.message);
-    return user[0];
+    return { user: user[0], error };
 };
 
 export const getUserById = async (

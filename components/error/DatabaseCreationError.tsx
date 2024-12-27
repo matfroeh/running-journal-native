@@ -1,24 +1,18 @@
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Text } from "react-native-paper";
-import { ViewThemed } from "@/components/generic";
+import { SafeAreaViewThemed, ViewThemed } from "@/components/generic";
+import { Button, Text } from "react-native-paper";
 import headerImage from "@/assets/images/drawerHeader.png";
 import { ImageBackground } from "expo-image";
+import { reloadAppAsync } from "expo";
 
 export const DatabaseCreationError = () => {
+    const reloadApp = async () => {
+        await reloadAppAsync(
+            "Reloaded from Error Boundary Wrapping DatabaseContextProvider by User Action"
+        );
+    };
     return (
-        <SafeAreaView
-            style={{
-                flex: 1,
-                backgroundColor: "black",
-            }}
-        >
-            <ViewThemed
-                style={{
-                    flex: 1,
-                    alignItems: "center",
-                    // justifyContent: "center",
-                }}
-            >
+        <SafeAreaViewThemed>
+            <ViewThemed style={{ alignItems: "center" }}>
                 <ImageBackground
                     source={headerImage}
                     style={{
@@ -63,7 +57,10 @@ export const DatabaseCreationError = () => {
                     make sure Running Journal has the permissions to create a
                     database on your device.
                 </Text>
+                <Button className="mt-24" mode="contained" onPress={reloadApp}>
+                    Reload Running Journal
+                </Button>
             </ViewThemed>
-        </SafeAreaView>
+        </SafeAreaViewThemed>
     );
 };

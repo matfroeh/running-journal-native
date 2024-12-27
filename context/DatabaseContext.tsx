@@ -4,7 +4,7 @@ import { User } from "@/types/modelTypes";
 
 // We will ensure that the db and user are not null because:
 // 1. A new db file is created if it does not exist, any error during creation will be caught at the DatabaseProvider layer
-// 2. A default user is created if userTable is empty
+// 2. The user is created upon first app launch or an empty userTable, any error during creation will be caught at the DatabaseProvider layer
 interface DatabaseContextTypes {
     db: DatabaseType;
     user: User;
@@ -14,17 +14,6 @@ interface DatabaseContextTypes {
 export const DatabaseContext = createContext<DatabaseContextTypes>(
     {} as DatabaseContextTypes
 );
-
-// old code with null values
-// interface DatabaseContextTypes {
-//     db: DatabaseType;
-//     user: User;
-// }
-
-// export const DatabaseContext = createContext<DatabaseContextTypes>({
-//     db: null,
-//     user: null,
-// });
 
 export const useDatabase = () => {
     const context = useContext(DatabaseContext);

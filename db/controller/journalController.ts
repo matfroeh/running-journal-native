@@ -66,7 +66,7 @@ export const getJournalById = async (
     );
     if (error) throw new Error(error.message);
 
-    return journal;
+    return { journal: journal, error };
 };
 
 export const createJournal = async (db: DatabaseType, journal: NewJournal) => {

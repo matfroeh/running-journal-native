@@ -1,15 +1,22 @@
 import React from "react";
-import { View, ViewProps } from "react-native";
+import {
+    SafeAreaView,
+    SafeAreaViewProps,
+} from "react-native-safe-area-context";
 import { useTheme } from "react-native-paper";
 import { PropsWithChildren } from "react";
 
-type ViewThemedProps = PropsWithChildren<ViewProps>;
+type SafeAreaViewThemedProps = PropsWithChildren<SafeAreaViewProps>;
 
-export const ViewThemed = ({ children, style, ...rest }: ViewThemedProps) => {
+export const SafeAreaViewThemed = ({
+    children,
+    style,
+    ...rest
+}: SafeAreaViewThemedProps) => {
     const theme = useTheme();
 
     return (
-        <View
+        <SafeAreaView
             style={[
                 { flex: 1, backgroundColor: theme.colors.background },
                 style,
@@ -17,6 +24,6 @@ export const ViewThemed = ({ children, style, ...rest }: ViewThemedProps) => {
             {...rest}
         >
             {children}
-        </View>
+        </SafeAreaView>
     );
 };
