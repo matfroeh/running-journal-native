@@ -1,11 +1,10 @@
 import { useDatabase } from "@/context/DatabaseContext";
 import { Journal } from "@/types/modelTypes";
-import { Button, Text, useTheme, Card } from "react-native-paper";
+import { Text, useTheme } from "react-native-paper";
 import { getLatestJournal } from "@/db/controller";
 import { useEffect, useState } from "react";
 import { ViewThemed } from "@/components/generic";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Input, InputField } from "@/components/ui/input";
+import { Text as TextNative } from "react-native";
 
 const Calendar = () => {
     const { db, user } = useDatabase();
@@ -15,27 +14,49 @@ const Calendar = () => {
 
     const [journal, setJournal] = useState<Journal | null>(null);
 
+    const runs = [
+        {
+            title: "Run 1",
+        },
+        {
+            title: "Run 2",
+        },
+        {
+            title: "Run 3",
+        },
+        {
+            title: "Run 4",
+        },
+    ];
+
+    const runsTwo = [
+        {
+            title: "Run 5",
+        },
+        {
+            title: "Run 6",
+        },
+        {
+            title: "Run 7",
+        },
+        {
+            title: "Summary",
+        },
+    ];
+
     if (!db) {
         return (
-            <SafeAreaView
-                style={{ flex: 1, backgroundColor: theme.colors.background }}
-            >
-                <ViewThemed>
-                    <Text>Database not found</Text>
-                </ViewThemed>
-            </SafeAreaView>
+            <ViewThemed>
+                <Text>Database not found</Text>
+            </ViewThemed>
         );
     }
 
     if (!user) {
         return (
-            <SafeAreaView
-                style={{ flex: 1, backgroundColor: theme.colors.background }}
-            >
-                <ViewThemed>
-                    <Text>User not found</Text>
-                </ViewThemed>
-            </SafeAreaView>
+            <ViewThemed>
+                <Text>User not found</Text>
+            </ViewThemed>
         );
     }
 
@@ -57,26 +78,47 @@ const Calendar = () => {
     }, [db, user]);
 
     return (
-        <SafeAreaView
+        <ViewThemed
             style={{ flex: 1, backgroundColor: theme.colors.background }}
         >
             <ViewThemed
                 style={{
                     alignItems: "center",
-                    flex: 1,
+                    padding: 10,
+                    flex: 0,
+                    borderStyle: "solid",
+                    borderWidth: 2,
                 }}
             >
-                <Text>{journal?.title}</Text>
+                <Text className="text-xl text-slate-700">{journal?.title}</Text>
+                <TextNative className="text-slate-700">
+                    {journal?.title}
+                </TextNative>
             </ViewThemed>
-            <ViewThemed style={{ flex: 3 }} className="flex-row justify-center">
-                <Card mode="contained" style={{ flex: 1, width: 100 }}>
-                    <Card.Title titleVariant="bodySmall" title="Card Title" />
-                    <Card.Content>
-                        <Text variant="labelSmall">Blabla</Text>
-                    </Card.Content>
-                </Card>
-            </ViewThemed>
-            <ViewThemed style={{ flex: 4 }} className="p-6">
+            {/* <ViewThemed style={{ flex: 1 }} className="border-2">
+                <HStack space="sm" className="py-1">
+                    {runs.map((run, index) => (
+                        <RunCard key={index} content={run} />
+                    ))}
+                </HStack>
+                <HStack space="sm" className="py-1">
+                    {runsTwo.map((run, index) => (
+                        <RunCard key={index} content={run} />
+                    ))}
+                </HStack>
+                <Divider orientation="horizontal" className="bg-white" />
+                <HStack space="sm" className="py-1">
+                    {runs.map((run, index) => (
+                        <RunCard key={index} content={run} />
+                    ))}
+                </HStack>
+                <HStack space="sm" className="py-1">
+                    {runsTwo.map((run, index) => (
+                        <RunCard key={index} content={run} />
+                    ))}
+                </HStack>
+            </ViewThemed> */}
+            {/* <ViewThemed style={{ flex: 4 }} className="p-6">
                 <Input
                     variant="underlined"
                     size="md"
@@ -89,8 +131,8 @@ const Calendar = () => {
                         placeholder="Enter Text here..."
                     />
                 </Input>
-            </ViewThemed>
-        </SafeAreaView>
+            </ViewThemed> */}
+        </ViewThemed>
     );
 };
 
