@@ -4,11 +4,7 @@ import { Text, useTheme } from "react-native-paper";
 import { getLatestJournal } from "@/db/controller";
 import { useEffect, useState } from "react";
 import { ViewThemed } from "@/components/generic";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Input, InputField } from "@/components/ui/input";
-import { HStack } from "@/components/ui/hstack";
-import { RunCard } from "@/components/calendar/";
-import { Divider } from "@/components/ui/divider";
+import { Text as TextNative } from "react-native";
 
 const Calendar = () => {
     const { db, user } = useDatabase();
@@ -50,25 +46,17 @@ const Calendar = () => {
 
     if (!db) {
         return (
-            <SafeAreaView
-                style={{ flex: 1, backgroundColor: theme.colors.background }}
-            >
-                <ViewThemed>
-                    <Text>Database not found</Text>
-                </ViewThemed>
-            </SafeAreaView>
+            <ViewThemed>
+                <Text>Database not found</Text>
+            </ViewThemed>
         );
     }
 
     if (!user) {
         return (
-            <SafeAreaView
-                style={{ flex: 1, backgroundColor: theme.colors.background }}
-            >
-                <ViewThemed>
-                    <Text>User not found</Text>
-                </ViewThemed>
-            </SafeAreaView>
+            <ViewThemed>
+                <Text>User not found</Text>
+            </ViewThemed>
         );
     }
 
@@ -102,9 +90,12 @@ const Calendar = () => {
                     borderWidth: 2,
                 }}
             >
-                <Text>{journal?.title}</Text>
+                <Text className="text-xl text-slate-700">{journal?.title}</Text>
+                <TextNative className="text-slate-700">
+                    {journal?.title}
+                </TextNative>
             </ViewThemed>
-            <ViewThemed style={{ flex: 1 }} className="border-2">
+            {/* <ViewThemed style={{ flex: 1 }} className="border-2">
                 <HStack space="sm" className="py-1">
                     {runs.map((run, index) => (
                         <RunCard key={index} content={run} />
@@ -126,7 +117,7 @@ const Calendar = () => {
                         <RunCard key={index} content={run} />
                     ))}
                 </HStack>
-            </ViewThemed>
+            </ViewThemed> */}
             {/* <ViewThemed style={{ flex: 4 }} className="p-6">
                 <Input
                     variant="underlined"
